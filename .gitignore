@@ -1,0 +1,7 @@
+.DS_Store
+build/
+
+# PVS Studio temporary files
+.PVS-Studio/
+PVS-Studio.log
+*.PVS-Studio.*
