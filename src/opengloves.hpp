@@ -13,7 +13,8 @@ namespace opengloves {
 
     using DeviceTypeIndex = std::uint8_t;
     enum DeviceType : DeviceTypeIndex {
-        DeviceType_LucidGloves,
+        DeviceType_LucidGloves = 0,
+        DeviceType_Other = 255,
     };
 
     template<typename Tf = float>
@@ -44,7 +45,7 @@ namespace opengloves {
     using InputFingerCurlData = InputFingerCurl<float>;
 
     template<typename Tp>
-    union InputFinger {
+    union InputFingers {
         std::array<Tp, 5> fingers; // NOLINT(*-magic-numbers): We aren't going to grow any new fingers soon tbh
         struct {
             Tp thumb;
@@ -58,13 +59,13 @@ namespace opengloves {
             };
         };
 
-        auto operator==(const InputFinger& other) const -> bool
+        auto operator==(const InputFingers& other) const -> bool
         {
             return this->thumb == other.thumb && this->index == other.index && this->middle == other.middle
                    && this->ring == other.ring && this->pinky == other.pinky;
         }
     };
-    using InputFingerData = InputFinger<float>;
+    using InputFingersData = InputFingers<float>;
 
     template<typename Tf = float, typename Tb = bool>
     struct InputJoystick {
@@ -129,8 +130,8 @@ namespace opengloves {
             this->analog_buttons = { { { nullptr, nullptr }, { nullptr, nullptr } } };
         }
 
-        InputFinger<InputFingerCurl<Tf>> curl;
-        InputFinger<Tf> splay;
+        InputFingers<InputFingerCurl<Tf>> curl;
+        InputFingers<Tf> splay;
 
         InputJoystick<Tf, Tb> joystick;
 
@@ -165,10 +166,14 @@ namespace opengloves {
         unsigned int firmware_version;
     };
 
-    using InputData = std::variant<InputInfoData, InputPeripheralData>;
+    struct InputInvalid {
+        auto operator==(const InputInvalid& /*unused*/) const -> bool { return true; }
+    };
+
+    using InputData = std::variant<InputInvalid, InputInfoData, InputPeripheralData>;
 
     template<typename Tf = float, typename Tb = bool>
-    using OutputForceFeedback = InputFinger<Tf>;
+    using OutputForceFeedback = InputFingers<Tf>;
     using OutputForceFeedbackData = OutputForceFeedback<float, bool>;
 
     template<typename Tf = float, typename Tb = bool>
