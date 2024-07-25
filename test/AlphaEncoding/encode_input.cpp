@@ -14,7 +14,7 @@ void check(const InputData &input, const std::string &expected) {
   REQUIRE(encoded.c_str() == expected);
 }
 
-TEST_CASE("encoding/alpha/encode", "[alpha]") {
+TEST_CASE("AlphaEncoding::encodeInput", "[alpha]") {
   SECTION("InputPeripheralData") {
     check(InputPeripheralData(), "A0B0C0D0E0\n");
 
