@@ -1,0 +1,23 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+      - develop
+
+jobs:
+  cmake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@v1.3.0
+        with:
+          run-build: true
+
+      - name: Test Project
+        uses: threeal/ctest-action@v1.1.0
