@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  BENCHMARK_FLAGS: --reporter console::out=-::colour-mode=ansi --rng-seed=0xBEEF
+
 jobs:
   benchmark:
     runs-on: ubuntu-latest
@@ -45,12 +48,12 @@ jobs:
 
       - name: Run Benchmark
         run: |
-          ./build/benchmark/Benchmark | tee build/benchmark-result.txt
+          ./build/benchmark/Benchmark --reporter XML::out=./build/test/benchmark-report.xml ${{ env.BENCHMARK_FLAGS }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: benchmark-result
-          path: build/benchmark-result.txt
+          path: ./build/test/benchmark-report.xml
 
   benchmark-target:
     if: github.event_name == 'pull_request'
@@ -88,9 +91,36 @@ jobs:
 
       - name: Run Benchmark
         run: |
-          ./build/benchmark/Benchmark | tee build/benchmark-result-target.txt
+          ./build/benchmark/Benchmark --reporter XML::out=./build/test/benchmark-report-target.xml ${{ env.BENCHMARK_FLAGS }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: benchmark-result-target
-          path: build/benchmark-result-target.txt
+          path: ./build/test/benchmark-report-target.xml
+
+  comment:
+    needs: [benchmark, benchmark-target]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: benchmark-result*
+          path: ./build/test
+          merge-multiple: true
+
+      - name: Setup Python3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Run compare script
+        run: |
+          python3 ./.github/scripts/compare-benchmarks.py ./build/test/benchmark-report-target.xml ./build/test/benchmark-report.xml | tee ./build/test/compare.txt
+        shell: bash
+          
+      - uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: ./build/test/compare.txt
+          comment_tag: benchmark
