@@ -1,0 +1,126 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BENCHMARK_FLAGS: --reporter console::out=-::colour-mode=ansi --rng-seed=0xBEEF
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - uses: actions/cache@v4
+        with:
+          path: build/_deps/*-src
+          key: cmake-dependency-src-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            cmake-dependency-src-
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            build/_deps/*-build
+            build/_deps/*-subbuild
+          key: cmake-dependency-builds-${{ runner.os }}-benchmark-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            cmake-dependency-builds-${{ runner.os }}-benchmark-
+            cmake-dependency-builds-${{ runner.os }}-
+
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@v1.3.0
+        with:
+          run-build: true
+          # release
+          options: CMAKE_BUILD_TYPE=Release
+          build-args: --config Release --target Benchmark
+
+      - name: Run Benchmark
+        run: |
+          ./build/benchmark/Benchmark --reporter XML::out=./build/test/benchmark-report.xml ${{ env.BENCHMARK_FLAGS }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-result
+          path: ./build/test/benchmark-report.xml
+
+  benchmark-target:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          submodules: 'recursive'
+
+      - uses: actions/cache@v4
+        with:
+          path: build/_deps/*-src
+          key: cmake-dependency-src-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            cmake-dependency-src-
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            build/_deps/*-build
+            build/_deps/*-subbuild
+          key: cmake-dependency-builds-${{ runner.os }}-benchmark-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            cmake-dependency-builds-${{ runner.os }}-benchmark-
+            cmake-dependency-builds-${{ runner.os }}-
+
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@v1.3.0
+        with:
+          run-build: true
+          # release
+          options: CMAKE_BUILD_TYPE=Release
+          build-args: --config Release --target Benchmark
+
+      - name: Run Benchmark
+        run: |
+          ./build/benchmark/Benchmark --reporter XML::out=./build/test/benchmark-report-target.xml ${{ env.BENCHMARK_FLAGS }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-result-target
+          path: ./build/test/benchmark-report-target.xml
+
+  comment:
+    needs: [benchmark, benchmark-target]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: benchmark-result*
+          path: ./build/test
+          merge-multiple: true
+
+      - name: Setup Python3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Run compare script
+        run: |
+          python3 ./.github/scripts/compare-benchmarks.py ./build/test/benchmark-report-target.xml ./build/test/benchmark-report.xml | tee ./build/test/compare.txt
+        shell: bash
+          
+      - uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: ./build/test/compare.txt
+          comment_tag: benchmark
