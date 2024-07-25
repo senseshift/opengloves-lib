@@ -13,4 +13,9 @@ FetchContent_MakeAvailable(Catch2)
 
 link_libraries(OpenGloves Catch2::Catch2WithMain)
 
-add_subdirectory(AlphaEncoding)
+add_executable(
+        Benchmark
+        bench_alpha_encode.cpp
+)
+
+set_target_properties(Benchmark PROPERTIES UNITY_BUILD OFF)
