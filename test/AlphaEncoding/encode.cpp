@@ -82,8 +82,31 @@ TEST_CASE("encoding/alpha/encode", "[alpha]") {
         .ring = { .curl = { 0.25f, 0.5f, 0.75f, 1.0f } },
         .pinky = { .curl = { 0.25f, 0.5f, 0.75f, 1.0f } },
       };
-
       check(input, "A1023(AAB)2047(AAC)3071(AAD)4095B1023(BAB)2047(BAC)3071(BAD)4095C1023(CAB)2047(CAC)3071(CAD)4095D1023(DAB)2047(DAC)3071(DAD)4095E1023(EAB)2047(EAC)3071(EAD)4095\n");
+    }
+
+    SECTION("Buttons") {
+      InputPeripheralData input;
+
+      input.button_a = { .press = true };
+      input.button_calibrate = { .press = true };
+
+      check(input, "A0B0C0D0E0JO\n");
+
+      input.grab = { true };
+      input.pinch = { true };
+
+      check(input, "A0B0C0D0E0JOML\n");
+
+      input.button_a = { .press = false };
+      input.button_calibrate = { .press = false };
+
+      check(input, "A0B0C0D0E0ML\n");
+
+      input.grab = { false };
+      input.pinch = { false };
+
+      check(input, "A0B0C0D0E0\n");
     }
   }
 
