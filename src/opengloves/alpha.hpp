@@ -86,22 +86,30 @@ namespace opengloves {
       const auto &finger_splay = splays[i];
       const auto finger_alpha_key = 'A' + i;
 
-      written += snprintf(
+      int n = snprintf(
         reinterpret_cast<char *const>(buffer + written),
         buffer_size - written,
         "%c%u",
         finger_alpha_key,
         static_cast<int>(finger_curl.curl_total * MAX_ANALOG_VALUE)
       );
+      if (n < 0 || n >= buffer_size - written) {
+        return written;
+      }
+      written += n;
 
       if (finger_splay > 0.0F) {
-        written += snprintf(
+        n = snprintf(
             reinterpret_cast<char *const>(buffer + written),
             buffer_size - written,
             "(%cB)%u",
             finger_alpha_key,
             static_cast<int>(finger_splay * MAX_ANALOG_VALUE)
         );
+        if (n < 0 || n >= buffer_size - written) {
+          return written;
+        }
+        written += n;
       }
 
       const auto& joints = finger_curl.curl;
@@ -113,7 +121,7 @@ namespace opengloves {
           continue;
         }
 
-        written += snprintf(
+        n = snprintf(
             reinterpret_cast<char *const>(buffer + written),
             buffer_size - written,
             "(%cA%c)%u",
@@ -121,31 +129,46 @@ namespace opengloves {
             joint_alpha_key,
             static_cast<int>(joint * MAX_ANALOG_VALUE)
         );
+        if (n < 0 || n >= buffer_size - written) {
+          return written;
+        }
+        written += n;
       }
     }
 
     if (input.joystick.x != 0.0F) {
-      written += snprintf(
+      int n = snprintf(
           reinterpret_cast<char *const>(buffer + written),
           buffer_size - written,
           "F%u",
           static_cast<int>(input.joystick.x * MAX_ANALOG_VALUE)
         );
+      if (n < 0 || n >= buffer_size - written) {
+        return written;
+      }
+      written += n;
     }
     if (input.joystick.y != 0.0F) {
-      written += snprintf(
+      int n = snprintf(
           reinterpret_cast<char *const>(buffer + written),
           buffer_size - written,
           "G%u",
           static_cast<int>(input.joystick.y * MAX_ANALOG_VALUE)
       );
+      if (n < 0 || n >= buffer_size - written) {
+        return written;
+      }
     }
     if (input.joystick.press) {
-      written += snprintf(
+      int n = snprintf(
           reinterpret_cast<char *const>(buffer + written),
           buffer_size - written,
           "H"
         );
+      if (n < 0 || n >= buffer_size - written) {
+        return written;
+      }
+      written += n;
     }
 
     const auto& buttons = input.buttons;
@@ -153,12 +176,17 @@ namespace opengloves {
       const auto& button = buttons[i];
       if (button.press) {
         const auto& buttonKey = AlphaEncoding::BUTTON_ALPHA_KEY[i];
-        written += snprintf(
+        int n = snprintf(
             reinterpret_cast<char *const>(buffer + written),
             buffer_size - written,
             "%c",
             buttonKey
           );
+
+        if (n < 0 || n >= buffer_size - written) {
+          return written;
+        }
+        written += n;
       }
     }
 
@@ -167,20 +195,28 @@ namespace opengloves {
       const auto& button = analog_buttons[i];
       if (button.press) {
         const auto& buttonKey = AlphaEncoding::ANALOG_BUTTON_ALPHA_KEY[i];
-        written += snprintf(
+        int n = snprintf(
             reinterpret_cast<char *const>(buffer + written),
             buffer_size - written,
             "%c",
             buttonKey
         );
+        if (n < 0 || n >= buffer_size - written) {
+          return written;
+        }
+        written += n;
       }
     }
 
-    written += snprintf(
+    int n = snprintf(
         reinterpret_cast<char *const>(buffer + written),
         buffer_size - written,
         "\n"
     );
+    if (n < 0 || n >= buffer_size - written) {
+      return written;
+    }
+    written += n;
 
     return written;
   }
