@@ -62,6 +62,16 @@ namespace opengloves {
         finger_alpha_key,
         static_cast<int>(finger_curl.curl_total * MAX_ANALOG_VALUE)
       );
+
+      if (finger_splay > 0.0F) {
+        written += snprintf(
+            reinterpret_cast<char *const>(buffer + written),
+            buffer_size - written,
+            "(%cB)%u",
+            finger_alpha_key,
+            static_cast<int>(finger_splay * MAX_ANALOG_VALUE)
+        );
+      }
     }
 
     written += snprintf(reinterpret_cast<char *const>(buffer + written), buffer_size - written, "\n");
