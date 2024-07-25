@@ -189,6 +189,50 @@ namespace opengloves {
     if (buffer_size == 0) {
       return OutputInvalid{};
     }
+
+    auto map = std::map<std::string, std::string>();
+    AlphaEncoding::splitPairs(reinterpret_cast<const char *>(buffer), buffer_size, map);
+
+    if (map.empty()) {
+      return OutputInvalid{};
+    }
+
+    // We assume all commands are for ffb, if there is any ffb command
+    const auto& thumb_curl = map.find("A");
+    const auto& index_curl = map.find("B");
+    const auto& middle_curl = map.find("C");
+    const auto& ring_curl = map.find("D");
+    const auto& pinky_curl = map.find("E");
+
+    if (thumb_curl != map.end() || index_curl != map.end() || middle_curl != map.end() ||
+        ring_curl != map.end() || pinky_curl != map.end()
+    ) {
+      OutputForceFeedbackData ffb{};
+
+      if (thumb_curl != map.end()) {
+        ffb.thumb = std::stof(thumb_curl->second) / MAX_ANALOG_VALUE;
+      }
+
+      if (index_curl != map.end()) {
+        ffb.index = std::stof(index_curl->second) / MAX_ANALOG_VALUE;
+      }
+
+      if (middle_curl != map.end()) {
+        ffb.middle = std::stof(middle_curl->second) / MAX_ANALOG_VALUE;
+      }
+
+      if (ring_curl != map.end()) {
+        ffb.ring = std::stof(ring_curl->second) / MAX_ANALOG_VALUE;
+      }
+
+      if (pinky_curl != map.end()) {
+        ffb.pinky = std::stof(pinky_curl->second) / MAX_ANALOG_VALUE;
+      }
+
+      return ffb;
+    }
+
+    return OutputInvalid{};
   }
 
   inline auto AlphaEncoding::splitPairs(const char *buffer, size_t buffer_size, std::map<std::string, std::string> &pairs) -> void {
