@@ -41,6 +41,10 @@ namespace opengloves {
       static auto encodeInput(const InputData& input, uint8_t* buffer, size_t buffer_size) -> size_t;
       static auto encodeInputInfo(const InputInfoData& input, uint8_t* buffer, size_t buffer_size) -> size_t;
       static auto encodeInputPeripheral(const InputPeripheralData& input, uint8_t* buffer, size_t buffer_size) -> size_t;
+
+      static auto decodeOutput(const uint8_t* buffer, size_t buffer_size) -> OutputData;
+
+      static auto splitPairs(const char* buffer, size_t buffer_size, std::map<std::string, std::string>& pairs) -> void;
   };
 
   inline auto AlphaEncoding::encodeInput(const opengloves::InputData &input, uint8_t *buffer, size_t buffer_size) -> size_t {
@@ -179,5 +183,51 @@ namespace opengloves {
     );
 
     return written;
+  }
+
+  inline auto AlphaEncoding::decodeOutput(const uint8_t *buffer, size_t buffer_size) -> OutputData {
+    if (buffer_size == 0) {
+      return OutputInvalid{};
+    }
+  }
+
+  inline auto AlphaEncoding::splitPairs(const char *buffer, size_t buffer_size, std::map<std::string, std::string> &pairs) -> void {
+    pairs.clear();
+
+    if (buffer_size == 0) {
+      return;
+    }
+
+    // we will split AAA100BBB200 into pairs of (AAA, 100), (BBB, 200)
+
+    const char* keyStart = buffer;
+    const char* keyEnd = buffer;
+    const char* valueStart = nullptr;
+
+    for (size_t i = 0; i < buffer_size; i++) {
+      if (isdigit(buffer[i])) {
+        if (valueStart == nullptr) {
+          keyEnd = buffer + i;
+          valueStart = buffer + i;
+        }
+      } else {
+        if (valueStart != nullptr) {
+          pairs.emplace(
+              std::string(keyStart, keyEnd),
+              std::string(valueStart, buffer + i)
+          );
+          keyStart = buffer + i;
+          valueStart = nullptr;
+        }
+      }
+    }
+
+    // Insert the last pair if any
+    if (valueStart != nullptr && keyStart != valueStart) {
+      pairs.emplace(
+          std::string(keyStart, keyEnd),
+          std::string(valueStart, buffer + buffer_size)
+      );
+    }
   }
 } // namespace opengloves

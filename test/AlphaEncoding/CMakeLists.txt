@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(
         AlphaEncodingTest
-        encode.cpp
+        encode_input.cpp split.cpp
 )
 
 set_target_properties(AlphaEncodingTest PROPERTIES UNITY_BUILD OFF)
