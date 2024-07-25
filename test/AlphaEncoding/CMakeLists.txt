@@ -11,3 +11,6 @@ add_executable(
 set_target_properties(AlphaEncodingTest PROPERTIES UNITY_BUILD OFF)
 
 add_test(AlphaEncoding AlphaEncodingTest)
+
+include(../../cmake/CheckCoverage.cmake)
+target_check_coverage(AlphaEncodingTest)
