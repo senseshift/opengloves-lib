@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <opengloves.hpp>
 #include <opengloves/alpha.hpp>
@@ -17,10 +17,11 @@ void check(const InputData &input, const std::string &expected) {
   REQUIRE(encoded.c_str() == expected);
 }
 
-TEST_CASE("AlphaEncoding::encodeInput()") {
+TEST_CASE("encoding peripheral input", "[alpha]") {
+  check(InputPeripheralData(), "A0B0C0D0E0\n");
+
   SECTION("Curl only") {
-    auto input = InputPeripheralData();
-    check(input, "A0B0C0D0E0\n");
+    InputPeripheralData input;
 
     input.curl = {
         .thumb = { .curl_total = 0 },
@@ -68,10 +69,6 @@ TEST_CASE("AlphaEncoding::encodeInput()") {
 //        .pinky = { .curl = { 0.25f, 0.5f, 0.75f, 1.0f } },
 //    };
 //    check(input, "A1023(AAB)2047(AAC)3071(AAD)4095B1023(BAB)2047(BAC)3071(BAD)4095C1023(CAB)2047(CAC)3071(CAD)4095D1023(DAB)2047(DAC)3071(DAD)4095E1023(EAB)2047(EAC)3071(EAD)4095\n");
-  }
-
-  SECTION("") {
-
   }
 
   SECTION("InputInfoData") {
