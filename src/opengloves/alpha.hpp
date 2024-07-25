@@ -72,6 +72,25 @@ namespace opengloves {
             static_cast<int>(finger_splay * MAX_ANALOG_VALUE)
         );
       }
+
+      const auto& joints = finger_curl.curl;
+      for (auto j = 1; j < joints.size(); j++) {
+        const auto& joint = joints[j];
+        const auto joint_alpha_key = 'A' + j;
+
+        if (joint == 0.0F) {
+          continue;
+        }
+
+        written += snprintf(
+            reinterpret_cast<char *const>(buffer + written),
+            buffer_size - written,
+            "(%cA%c)%u",
+            finger_alpha_key,
+            joint_alpha_key,
+            static_cast<int>(joint * MAX_ANALOG_VALUE)
+        );
+      }
     }
 
     written += snprintf(reinterpret_cast<char *const>(buffer + written), buffer_size - written, "\n");
