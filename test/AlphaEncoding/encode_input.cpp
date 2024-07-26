@@ -15,6 +15,8 @@ void check(const InputData &input, const std::string &expected) {
 }
 
 TEST_CASE("AlphaEncoding::encodeInput", "[alpha]") {
+  check(InputData(), "");
+
   SECTION("InputPeripheralData") {
     check(InputPeripheralData(), "A0B0C0D0E0\n");
 
@@ -150,6 +152,18 @@ TEST_CASE("AlphaEncoding::encodeInput", "[alpha]") {
       check(input, "A0B0C0D0E0\n");
     }
 
+    SECTION("Joystick") {
+      InputPeripheralData input;
+
+      input.joystick = {
+          .x = 0.5,
+          .y = 0.5,
+          .press = true,
+      };
+
+      check(input, "A0B0C0D0E0F2047G2047H\n");
+    }
+
     SECTION("Do not overflow") {
       auto buffer_size = GENERATE(range(1, 256));
       auto buffer = std::string(buffer_size, '\0');
@@ -168,6 +182,19 @@ TEST_CASE("AlphaEncoding::encodeInput", "[alpha]") {
           .middle = 0.5,
           .ring = 0.5,
           .pinky = 0.5,
+      };
+      input.button_a = { .press = true };
+      input.button_b = { .press = true };
+      input.button_menu = { .press = true };
+      input.button_calibrate = { .press = true };
+      input.trigger = { true };
+      input.grab = { true };
+      input.pinch = { true };
+
+      input.joystick = {
+          .x = 0.5,
+          .y = 0.5,
+          .press = true,
       };
 
       std::fill(buffer.begin(), buffer.end(), '\0');

@@ -14,6 +14,8 @@ void check(const std::string &data, const T &expected) {
 }
 
 TEST_CASE("AlphaEncoding::decodeOutput", "[alpha]") {
+  check("", OutputInvalid());
+
   check("A0B0C0D0E0\n", OutputForceFeedbackData{
       .thumb = 0.0f,
       .index = 0.0f,

@@ -158,6 +158,7 @@ namespace opengloves {
       if (n < 0 || n >= buffer_size - written) {
         return written;
       }
+      written += n;
     }
     if (input.joystick.press) {
       int n = snprintf(

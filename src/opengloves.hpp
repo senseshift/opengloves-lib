@@ -190,6 +190,7 @@ namespace opengloves {
     using OutputHapticsData = OutputHaptics<float, bool>;
 
     class OutputInvalid {
+      public:
         auto operator==(const OutputInvalid& /*unused*/) const -> bool { return true; }
     };
     using OutputData = std::variant<OutputInvalid, OutputForceFeedbackData, OutputHapticsData>;
