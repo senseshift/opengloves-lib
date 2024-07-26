@@ -42,12 +42,15 @@ namespace opengloves {
       static auto encodeInputInfo(const InputInfoData& input, uint8_t* buffer, size_t buffer_size) -> size_t;
       static auto encodeInputPeripheral(const InputPeripheralData& input, uint8_t* buffer, size_t buffer_size) -> size_t;
 
+      static auto encodeOutput(const OutputData& output, uint8_t* buffer, size_t buffer_size) -> size_t;
+      static auto encodeOutputForceFeedback(const OutputForceFeedbackData& output, uint8_t* buffer, size_t buffer_size) -> size_t;
+
       static auto decodeOutput(const uint8_t* buffer, size_t buffer_size) -> OutputData;
 
       static auto splitPairs(const char* buffer, size_t buffer_size, std::map<std::string, std::string>& pairs) -> void;
   };
 
-  inline auto AlphaEncoding::encodeInput(const opengloves::InputData &input, uint8_t *buffer, size_t buffer_size) -> size_t {
+  inline auto AlphaEncoding::encodeInput(const InputData &input, uint8_t *buffer, size_t buffer_size) -> size_t {
     if (std::holds_alternative<InputPeripheralData>(input)) {
       return AlphaEncoding::encodeInputPeripheral(std::get<InputPeripheralData>(input), buffer, buffer_size);
     } else if (std::holds_alternative<InputInfoData>(input)) {
@@ -57,7 +60,7 @@ namespace opengloves {
     return 0;
   }
 
-  inline auto AlphaEncoding::encodeInputInfo(const opengloves::InputInfoData &input, uint8_t *buffer, size_t buffer_size) -> size_t {
+  inline auto AlphaEncoding::encodeInputInfo(const InputInfoData &input, uint8_t *buffer, size_t buffer_size) -> size_t {
     const auto& keyFirmwareVersion = AlphaEncoding::INFO_FIRMWARE_VERSION_KEY;
     const auto& keyDeviceType = AlphaEncoding::INFO_DEVICE_TYPE_KEY;
     const auto& keyHand = AlphaEncoding::INFO_HAND_KEY;
@@ -75,7 +78,7 @@ namespace opengloves {
     );
   }
 
-  inline auto AlphaEncoding::encodeInputPeripheral(const opengloves::InputPeripheralData &input, uint8_t *buffer, size_t buffer_size) -> size_t {
+  inline auto AlphaEncoding::encodeInputPeripheral(const InputPeripheralData &input, uint8_t *buffer, size_t buffer_size) -> size_t {
     auto written = 0;
 
     const auto& curls = input.curl.fingers;
@@ -220,6 +223,27 @@ namespace opengloves {
     written += n;
 
     return written;
+  }
+
+  inline auto AlphaEncoding::encodeOutput(const OutputData &output, uint8_t *buffer, size_t buffer_size) -> size_t {
+    if (std::holds_alternative<OutputForceFeedbackData>(output)) {
+      return AlphaEncoding::encodeOutputForceFeedback(std::get<OutputForceFeedbackData>(output), buffer, buffer_size);
+    }
+
+    return 0;
+  }
+
+  inline auto AlphaEncoding::encodeOutputForceFeedback(const OutputForceFeedbackData &output, uint8_t *buffer, size_t buffer_size) -> size_t {
+    return snprintf(
+        reinterpret_cast<char *const>(buffer),
+        buffer_size,
+        "A%uB%uC%uD%uE%u\n",
+        static_cast<int>(output.thumb * MAX_ANALOG_VALUE),
+        static_cast<int>(output.index * MAX_ANALOG_VALUE),
+        static_cast<int>(output.middle * MAX_ANALOG_VALUE),
+        static_cast<int>(output.ring * MAX_ANALOG_VALUE),
+        static_cast<int>(output.pinky * MAX_ANALOG_VALUE)
+    );
   }
 
   inline auto AlphaEncoding::decodeOutput(const uint8_t *buffer, size_t buffer_size) -> OutputData {
