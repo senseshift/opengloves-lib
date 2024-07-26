@@ -307,6 +307,28 @@ namespace opengloves {
       return ffb;
     }
 
+    const auto& frequency = map.find("F");
+    const auto& duration = map.find("G");
+    const auto& amplitude = map.find("H");
+
+    if (frequency != map.end() || duration != map.end() || amplitude != map.end()) {
+      OutputHapticsData haptics{};
+    
+      if (frequency != map.end()) {
+            haptics.frequency = std::stof(frequency->second);
+      }
+
+      if (duration != map.end()) {
+            haptics.duration = std::stof(duration->second);
+      }
+
+      if (amplitude != map.end()) {
+            haptics.amplitude = std::stof(amplitude->second);
+      }
+
+      return haptics;
+    }
+
     return OutputInvalid{};
   }
 

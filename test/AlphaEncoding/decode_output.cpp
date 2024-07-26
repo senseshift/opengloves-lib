@@ -16,6 +16,8 @@ void check(const std::string &data, const T &expected) {
 TEST_CASE("AlphaEncoding::decodeOutput", "[alpha]") {
   check("", OutputInvalid());
   check("\n", OutputInvalid());
+  check("123", OutputInvalid());
+  check("blah blah blah", OutputInvalid());
 
   SECTION("OutputForceFeedbackData") {
     check("A0B0C0D0E0\n", OutputForceFeedbackData{
@@ -49,5 +51,25 @@ TEST_CASE("AlphaEncoding::decodeOutput", "[alpha]") {
         .ring = 1.0f,
         .pinky = 1.0f,
     });
+  }
+
+  SECTION("OutputHapticsData") {
+      check("F0.00G0.00H0.00\n", OutputHapticsData{
+          .frequency = 0.0f,
+          .duration = 0.0f,
+          .amplitude = 0.0f,
+      });
+
+      check("F0.40G0.60H0.20\n", OutputHapticsData{
+          .frequency = 0.4f,
+          .duration = 0.6f,
+          .amplitude = 0.2f,
+      });
+
+      check("F1.00G1.00H1.00\n", OutputHapticsData{
+          .frequency = 1.0f,
+          .duration = 1.0f,
+          .amplitude = 1.0f,
+      });
   }
 }
