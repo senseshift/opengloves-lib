@@ -40,6 +40,8 @@
     ]
   },
   "build": {
-    "srcDir": "src"
+    "srcDir": "src",
+    "flags": "-std=gnu++17",
+    "unflags": "-std=gnu++11"
   }
 }
