@@ -1,11 +1,10 @@
 #include <catch2/catch_all.hpp>
 
-#include <opengloves.hpp>
 #include <opengloves/alpha.hpp>
 
 using namespace opengloves;
 
-void check(std::string string, std::map<std::string, std::string> expected) {
+void check(const std::string& string, std::map<std::string, std::string> expected) {
   std::map<std::string, std::string> split;
 
   AlphaEncoding::splitPairs(string.c_str(), string.size(), split);
@@ -36,5 +35,11 @@ TEST_CASE("AlphaEncoding::splitPairs", "[alpha]") {
     { "B", "300" },
     { "(BB)", "400" },
     { "C", "500" },
+  });
+
+  check("F0.00G0.00H0.00\n", {
+    {"F", "0.00"},
+    {"G", "0.00"},
+    {"H", "0.00"},
   });
 }

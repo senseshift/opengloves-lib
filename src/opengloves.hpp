@@ -167,6 +167,7 @@ namespace opengloves {
     };
 
     struct InputInvalid {
+      public:
         auto operator==(const InputInvalid& /*unused*/) const -> bool { return true; }
     };
 

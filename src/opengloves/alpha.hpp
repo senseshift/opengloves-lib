@@ -44,6 +44,7 @@ namespace opengloves {
 
       static auto encodeOutput(const OutputData& output, uint8_t* buffer, size_t buffer_size) -> size_t;
       static auto encodeOutputForceFeedback(const OutputForceFeedbackData& output, uint8_t* buffer, size_t buffer_size) -> size_t;
+      static auto encodeOutputHaptics(const OutputHapticsData& output, uint8_t* buffer, size_t buffer_size) -> size_t;
 
       static auto decodeOutput(const uint8_t* buffer, size_t buffer_size) -> OutputData;
 
@@ -228,6 +229,8 @@ namespace opengloves {
   inline auto AlphaEncoding::encodeOutput(const OutputData &output, uint8_t *buffer, size_t buffer_size) -> size_t {
     if (std::holds_alternative<OutputForceFeedbackData>(output)) {
       return AlphaEncoding::encodeOutputForceFeedback(std::get<OutputForceFeedbackData>(output), buffer, buffer_size);
+    } else if (std::holds_alternative<OutputHapticsData>(output)) {
+      return AlphaEncoding::encodeOutputHaptics(std::get<OutputHapticsData>(output), buffer, buffer_size);
     }
 
     return 0;
@@ -243,6 +246,17 @@ namespace opengloves {
         static_cast<int>(output.middle * MAX_ANALOG_VALUE),
         static_cast<int>(output.ring * MAX_ANALOG_VALUE),
         static_cast<int>(output.pinky * MAX_ANALOG_VALUE)
+    );
+  }
+
+  inline auto AlphaEncoding::encodeOutputHaptics(const opengloves::OutputHapticsData &output, uint8_t *buffer, size_t buffer_size) -> size_t {
+    return snprintf(
+        reinterpret_cast<char *const>(buffer),
+        buffer_size,
+        "F%.2fG%.2fH%.2f\n",
+        output.frequency,
+        output.duration,
+        output.amplitude
     );
   }
 
@@ -296,6 +310,7 @@ namespace opengloves {
     return OutputInvalid{};
   }
 
+  // todo: in theory, we can use std::string_view here, or const char*
   inline auto AlphaEncoding::splitPairs(const char *buffer, size_t buffer_size, std::map<std::string, std::string> &pairs) -> void {
     pairs.clear();
 
@@ -310,7 +325,7 @@ namespace opengloves {
     const char* valueStart = nullptr;
 
     for (size_t i = 0; i < buffer_size; i++) {
-      if (isdigit(buffer[i])) {
+      if (isdigit(buffer[i]) || buffer[i] == '.') {
         if (valueStart == nullptr) {
           keyEnd = buffer + i;
           valueStart = buffer + i;
