@@ -6,13 +6,50 @@ on:
       - main
       - develop
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ctest:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        compiler:
+          - g++-11
+          - g++-12
+          - clang++-12
+          - clang++-13
+          - clang++-14
+          - clang++-15
+
+        include:
+          - os: ubuntu-latest
+            compiler: g++
+            coverage: true
+
+          - os: ubuntu-24.04
+            compiler: g++-13
+
+          - os: windows-latest
+          - os: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+
+      - name: Setup Ninja
+        if: ${{ matrix.generator == 'Ninja' }}
+        uses: seanmiddleditch/gha-setup-ninja@v4
+
+      - name: Setup Dependencies
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.compiler }}
 
       - uses: actions/cache@v4
         with:
@@ -26,15 +63,19 @@ jobs:
           path: |
             build/_deps/*-build
             build/_deps/*-subbuild
-          key: cmake-dependency-builds-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt') }}
+          key: cmake-dependency-builds-${{ runner.os }}-${{ matrix.compiler }}-${{ hashFiles('**/CMakeLists.txt') }}
           restore-keys: |
+            cmake-dependency-builds-${{ runner.os }}-${{ matrix.compiler }}-
             cmake-dependency-builds-${{ runner.os }}-
 
       - name: Configure and Build Project
         uses: threeal/cmake-action@v1.3.0
         with:
           run-build: true
-          args: -DENABLE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
+          args: >-
+            -DCMAKE_BUILD_TYPE=Debug 
+            -DENABLE_COVERAGE=${{ matrix.coverage == true && 'ON' || 'OFF' }}
+          cxx-compiler: ${{ matrix.compiler }}
 
       - name: Test Project
         uses: threeal/ctest-action@v1.1.0
@@ -42,7 +83,7 @@ jobs:
           build-config: Debug
 
       - name: Check Coverage
-        if: ${{ matrix.os != 'windows' }}
+        if: ${{ matrix.coverage == true }}
         uses: threeal/gcovr-action@xml-out
         with:
           xml-out: './build/coverage.xml'
@@ -52,6 +93,7 @@ jobs:
             test/*
 
       - name: Upload coverage reports to Codecov
+        if: ${{ matrix.coverage == true }}
         uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

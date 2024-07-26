@@ -1,6 +1,3 @@
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 Include(FetchContent)
 
 FetchContent_Declare(
@@ -19,3 +16,4 @@ add_executable(
 )
 
 set_target_properties(Benchmark PROPERTIES UNITY_BUILD OFF)
+target_compile_features(Benchmark PRIVATE cxx_std_20)

@@ -1,6 +1,3 @@
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 add_executable(
         AlphaEncodingTest
         encode_input.cpp
@@ -10,6 +7,7 @@ add_executable(
 )
 
 set_target_properties(AlphaEncodingTest PROPERTIES UNITY_BUILD OFF)
+target_compile_features(AlphaEncodingTest PRIVATE cxx_std_20)
 
 add_test(AlphaEncoding AlphaEncodingTest)
 
