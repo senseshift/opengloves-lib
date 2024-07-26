@@ -43,8 +43,10 @@ jobs:
 
       - name: Check Coverage
         if: ${{ matrix.os != 'windows' }}
-        uses: threeal/gcovr-action@v1.0.0
+        uses: threeal/gcovr-action@xml-out
         with:
+          xml-out: './build/coverage.xml'
+          coveralls-out: './build/coveralls.json'
           excludes: |
             build/* 
             test/*
@@ -55,3 +57,5 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           fail_ci_if_error: true
+          files: ./build/coverage.xml
+          disable_search: true
