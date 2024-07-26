@@ -2,6 +2,9 @@
 
 #include <opengloves.hpp>
 
+#include <map>
+#include <variant>
+
 namespace opengloves {
   class AlphaEncoding {
     inline static constexpr const uint16_t MAX_ANALOG_VALUE = 4095;
