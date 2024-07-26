@@ -6,6 +6,7 @@ add_executable(
         encode_input.cpp
         split.cpp
         decode_output.cpp
+        encode_output.cpp
 )
 
 set_target_properties(AlphaEncodingTest PROPERTIES UNITY_BUILD OFF)
