@@ -23,6 +23,11 @@ target_include_directories(
 )
 
 target_compile_features(OpenGloves INTERFACE cxx_std_17)
+if (MSVC)
+    # target_compile_options(OpenGloves INTERFACE /W4 /WX)
+else ()
+    target_compile_options(OpenGloves INTERFACE -Wall -Wextra -Werror)
+endif ()
 
 # locations are provided by GNUInstallDirs
 install(

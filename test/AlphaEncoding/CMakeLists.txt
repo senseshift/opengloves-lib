@@ -7,6 +7,7 @@ add_executable(
 )
 
 set_target_properties(AlphaEncodingTest PROPERTIES UNITY_BUILD OFF)
+
 target_compile_features(AlphaEncodingTest PRIVATE cxx_std_20)
 
 add_test(AlphaEncoding AlphaEncodingTest)
