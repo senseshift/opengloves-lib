@@ -34,13 +34,13 @@ TEST_CASE("Benchmark AlphaEncoding", "[benchmark][alpha]") {
           .ring = 0.5,
           .pinky = 0.5,
       };
-      input.button_a = { .press = true };
-      input.button_b = { .press = true };
-      input.button_menu = { .press = true };
-      input.button_calibrate = { .press = true };
-      input.trigger = { true };
-      input.grab = { true };
-      input.pinch = { true };
+      input.button_a.press = true;
+      input.button_b.press = true;
+      input.button_menu.press = true;
+      input.button_calibrate.press = true;
+      input.trigger.press = true;
+      input.grab.press = true;
+      input.pinch.press = true;
 
       input.joystick = {
           .x = 0.5,

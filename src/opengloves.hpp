@@ -99,16 +99,16 @@ namespace opengloves {
         InputPeripheral()
         {
             this->curl.fingers = { {
-              { 0.0F, 0.0F, 0.0F, 0.0F },
-              { 0.0F, 0.0F, 0.0F, 0.0F },
-              { 0.0F, 0.0F, 0.0F, 0.0F },
-              { 0.0F, 0.0F, 0.0F, 0.0F },
-              { 0.0F, 0.0F, 0.0F, 0.0F },
+              { { 0.0F, 0.0F, 0.0F, 0.0F } },
+              { { 0.0F, 0.0F, 0.0F, 0.0F } },
+              { { 0.0F, 0.0F, 0.0F, 0.0F } },
+              { { 0.0F, 0.0F, 0.0F, 0.0F } },
+              { { 0.0F, 0.0F, 0.0F, 0.0F } },
             } };
             this->splay.fingers = { 0.0F, 0.0F, 0.0F, 0.0F, 0.0F };
             this->joystick = { 0.0F, 0.0F, false };
-            this->buttons = { { false, false, false, false, false } };
-            this->analog_buttons = { { { false, 0.0F }, { false, 0.0F } } };
+            this->buttons = { { { false }, { false }, { false }, { false }, { false } } };
+            this->analog_buttons = { { { { false }, 0.0F }, { { false }, 0.0F } } };
         }
 
         template<

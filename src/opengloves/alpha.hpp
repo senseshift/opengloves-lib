@@ -41,20 +41,20 @@ namespace opengloves {
     inline static constexpr const char* INFO_HAND_KEY = "(ZH)";
 
     public:
-      static auto encodeInput(const InputData& input, uint8_t* buffer, size_t buffer_size) -> size_t;
-      static auto encodeInputInfo(const InputInfoData& input, uint8_t* buffer, size_t buffer_size) -> size_t;
-      static auto encodeInputPeripheral(const InputPeripheralData& input, uint8_t* buffer, size_t buffer_size) -> size_t;
+      static auto encodeInput(const InputData& input, uint8_t* buffer, int buffer_size) -> int;
+      static auto encodeInputInfo(const InputInfoData& input, uint8_t* buffer, int buffer_size) -> int;
+      static auto encodeInputPeripheral(const InputPeripheralData& input, uint8_t* buffer, int buffer_size) -> int;
 
-      static auto encodeOutput(const OutputData& output, uint8_t* buffer, size_t buffer_size) -> size_t;
-      static auto encodeOutputForceFeedback(const OutputForceFeedbackData& output, uint8_t* buffer, size_t buffer_size) -> size_t;
-      static auto encodeOutputHaptics(const OutputHapticsData& output, uint8_t* buffer, size_t buffer_size) -> size_t;
+      static auto encodeOutput(const OutputData& output, uint8_t* buffer, int buffer_size) -> int;
+      static auto encodeOutputForceFeedback(const OutputForceFeedbackData& output, uint8_t* buffer, int buffer_size) -> int;
+      static auto encodeOutputHaptics(const OutputHapticsData& output, uint8_t* buffer, int buffer_size) -> int;
 
       static auto decodeOutput(const uint8_t* buffer, size_t buffer_size) -> OutputData;
 
       static auto splitPairs(const char* buffer, size_t buffer_size, std::map<std::string, std::string>& pairs) -> void;
   };
 
-  inline auto AlphaEncoding::encodeInput(const InputData &input, uint8_t *buffer, size_t buffer_size) -> size_t {
+  inline auto AlphaEncoding::encodeInput(const InputData &input, uint8_t *buffer, int buffer_size) -> int {
     if (std::holds_alternative<InputPeripheralData>(input)) {
       return AlphaEncoding::encodeInputPeripheral(std::get<InputPeripheralData>(input), buffer, buffer_size);
     } else if (std::holds_alternative<InputInfoData>(input)) {
@@ -64,13 +64,13 @@ namespace opengloves {
     return 0;
   }
 
-  inline auto AlphaEncoding::encodeInputInfo(const InputInfoData &input, uint8_t *buffer, size_t buffer_size) -> size_t {
+  inline auto AlphaEncoding::encodeInputInfo(const InputInfoData &input, uint8_t *buffer, int buffer_size) -> int {
     const auto& keyFirmwareVersion = AlphaEncoding::INFO_FIRMWARE_VERSION_KEY;
     const auto& keyDeviceType = AlphaEncoding::INFO_DEVICE_TYPE_KEY;
     const auto& keyHand = AlphaEncoding::INFO_HAND_KEY;
 
     return snprintf(
-        reinterpret_cast<char *const>(buffer),
+        reinterpret_cast<char*>(buffer),
         buffer_size,
         "%s%u%s%u%s%u\n",
         keyFirmwareVersion,
@@ -82,19 +82,19 @@ namespace opengloves {
     );
   }
 
-  inline auto AlphaEncoding::encodeInputPeripheral(const InputPeripheralData &input, uint8_t *buffer, size_t buffer_size) -> size_t {
+  inline auto AlphaEncoding::encodeInputPeripheral(const InputPeripheralData &input, uint8_t *buffer, int buffer_size) -> int {
     auto written = 0;
 
     const auto& curls = input.curl.fingers;
     const auto& splays = input.splay.fingers;
 
-    for (auto i = 0; i < curls.size(); i++) {
+    for (size_t i = 0; i < curls.size(); i++) {
       const auto &finger_curl = curls[i];
       const auto &finger_splay = splays[i];
-      const auto finger_alpha_key = 'A' + i;
+      const char finger_alpha_key = 'A' + static_cast<char>(i);
 
       int n = snprintf(
-        reinterpret_cast<char *const>(buffer + written),
+        reinterpret_cast<char*>(buffer + written),
         buffer_size - written,
         "%c%u",
         finger_alpha_key,
@@ -107,7 +107,7 @@ namespace opengloves {
 
       if (finger_splay > 0.0F) {
         n = snprintf(
-            reinterpret_cast<char *const>(buffer + written),
+            reinterpret_cast<char*>(buffer + written),
             buffer_size - written,
             "(%cB)%u",
             finger_alpha_key,
@@ -120,16 +120,16 @@ namespace opengloves {
       }
 
       const auto& joints = finger_curl.curl;
-      for (auto j = 1; j < joints.size(); j++) {
+      for (size_t j = 1; j < joints.size(); j++) {
         const auto& joint = joints[j];
-        const auto joint_alpha_key = 'A' + j;
+        const char joint_alpha_key = 'A' + j;
 
         if (joint == 0.0F) {
           continue;
         }
 
         n = snprintf(
-            reinterpret_cast<char *const>(buffer + written),
+            reinterpret_cast<char*>(buffer + written),
             buffer_size - written,
             "(%cA%c)%u",
             finger_alpha_key,
@@ -145,7 +145,7 @@ namespace opengloves {
 
     if (input.joystick.x != 0.0F) {
       int n = snprintf(
-          reinterpret_cast<char *const>(buffer + written),
+          reinterpret_cast<char*>(buffer + written),
           buffer_size - written,
           "F%u",
           static_cast<int>(input.joystick.x * MAX_ANALOG_VALUE)
@@ -157,7 +157,7 @@ namespace opengloves {
     }
     if (input.joystick.y != 0.0F) {
       int n = snprintf(
-          reinterpret_cast<char *const>(buffer + written),
+          reinterpret_cast<char*>(buffer + written),
           buffer_size - written,
           "G%u",
           static_cast<int>(input.joystick.y * MAX_ANALOG_VALUE)
@@ -169,7 +169,7 @@ namespace opengloves {
     }
     if (input.joystick.press) {
       int n = snprintf(
-          reinterpret_cast<char *const>(buffer + written),
+          reinterpret_cast<char*>(buffer + written),
           buffer_size - written,
           "H"
         );
@@ -180,12 +180,12 @@ namespace opengloves {
     }
 
     const auto& buttons = input.buttons;
-    for (auto i = 0; i < buttons.size(); i++) {
+    for (size_t i = 0; i < buttons.size(); i++) {
       const auto& button = buttons[i];
       if (button.press) {
         const auto& buttonKey = AlphaEncoding::BUTTON_ALPHA_KEY[i];
         int n = snprintf(
-            reinterpret_cast<char *const>(buffer + written),
+            reinterpret_cast<char*>(buffer + written),
             buffer_size - written,
             "%c",
             buttonKey
@@ -199,12 +199,12 @@ namespace opengloves {
     }
 
     const auto& analog_buttons = input.analog_buttons;
-    for (auto i = 0; i < analog_buttons.size(); i++) {
+    for (size_t i = 0; i < analog_buttons.size(); i++) {
       const auto& button = analog_buttons[i];
       if (button.press) {
         const auto& buttonKey = AlphaEncoding::ANALOG_BUTTON_ALPHA_KEY[i];
         int n = snprintf(
-            reinterpret_cast<char *const>(buffer + written),
+            reinterpret_cast<char*>(buffer + written),
             buffer_size - written,
             "%c",
             buttonKey
@@ -217,7 +217,7 @@ namespace opengloves {
     }
 
     int n = snprintf(
-        reinterpret_cast<char *const>(buffer + written),
+        reinterpret_cast<char*>(buffer + written),
         buffer_size - written,
         "\n"
     );
@@ -229,7 +229,7 @@ namespace opengloves {
     return written;
   }
 
-  inline auto AlphaEncoding::encodeOutput(const OutputData &output, uint8_t *buffer, size_t buffer_size) -> size_t {
+  inline auto AlphaEncoding::encodeOutput(const OutputData &output, uint8_t *buffer, int buffer_size) -> int {
     if (std::holds_alternative<OutputForceFeedbackData>(output)) {
       return AlphaEncoding::encodeOutputForceFeedback(std::get<OutputForceFeedbackData>(output), buffer, buffer_size);
     } else if (std::holds_alternative<OutputHapticsData>(output)) {
@@ -239,9 +239,9 @@ namespace opengloves {
     return 0;
   }
 
-  inline auto AlphaEncoding::encodeOutputForceFeedback(const OutputForceFeedbackData &output, uint8_t *buffer, size_t buffer_size) -> size_t {
+  inline auto AlphaEncoding::encodeOutputForceFeedback(const OutputForceFeedbackData &output, uint8_t *buffer, int buffer_size) -> int {
     return snprintf(
-        reinterpret_cast<char *const>(buffer),
+        reinterpret_cast<char*>(buffer),
         buffer_size,
         "A%uB%uC%uD%uE%u\n",
         static_cast<int>(output.thumb * MAX_ANALOG_VALUE),
@@ -252,9 +252,9 @@ namespace opengloves {
     );
   }
 
-  inline auto AlphaEncoding::encodeOutputHaptics(const opengloves::OutputHapticsData &output, uint8_t *buffer, size_t buffer_size) -> size_t {
+  inline auto AlphaEncoding::encodeOutputHaptics(const opengloves::OutputHapticsData &output, uint8_t *buffer, int buffer_size) -> int {
     return snprintf(
-        reinterpret_cast<char *const>(buffer),
+        reinterpret_cast<char*>(buffer),
         buffer_size,
         "F%.2fG%.2fH%.2f\n",
         output.frequency,
@@ -269,7 +269,7 @@ namespace opengloves {
     }
 
     auto map = std::map<std::string, std::string>();
-    AlphaEncoding::splitPairs(reinterpret_cast<const char *>(buffer), buffer_size, map);
+    AlphaEncoding::splitPairs(reinterpret_cast<const char*>(buffer), buffer_size, map);
 
     if (map.empty()) {
       return OutputInvalid{};

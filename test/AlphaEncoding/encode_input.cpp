@@ -67,14 +67,11 @@ TEST_CASE("AlphaEncoding::encodeInput", "[alpha]") {
     SECTION("Joints") {
       InputPeripheralData input;
 
-      input.curl = {
-        .thumb = { .curl = { 0.25f, 0.5f, 0.75f, 1.0f } },
-      };
+      input.curl.thumb.curl = { 0.25f, 0.5f, 0.75f, 1.0f };
       check(input, "A1023(AAB)2047(AAC)3071(AAD)4095B0C0D0E0\n");
 
-      input.curl = {
-        .index = { .curl = { 0.25f, 0.5f, 0.75f, 1.0f } },
-      };
+      input.curl.thumb.curl = { 0, 0, 0, 0 };
+      input.curl.index.curl = { 0.25f, 0.5f, 0.75f, 1.0f };
       check(input, "A0B1023(BAB)2047(BAC)3071(BAD)4095C0D0E0\n");
 
       input.curl = {
@@ -89,24 +86,18 @@ TEST_CASE("AlphaEncoding::encodeInput", "[alpha]") {
 
     SECTION("Joint + Splay") {
       InputPeripheralData input;
-      input.curl = {
-          .thumb = { .curl = { 0.25f, 0.5f, 0.75f, 1.0f } },
-      };
-      input.splay = {
-          .thumb = 0.5,
-      };
+      input.curl.thumb.curl = { 0.25f, 0.5f, 0.75f, 1.0f };
+      input.splay.thumb = 0.5;
 
       check(input, "A1023(AB)2047(AAB)2047(AAC)3071(AAD)4095B0C0D0E0\n");
 
-      input.curl = {
-          .index = { .curl = { 0.25f, 0.5f, 0.75f, 1.0f } },
-      };
+      input.curl.thumb.curl = { 0, 0, 0, 0 };
+      input.curl.index.curl = { 0.25f, 0.5f, 0.75f, 1.0f };
 
       check(input, "A0(AB)2047B1023(BAB)2047(BAC)3071(BAD)4095C0D0E0\n");
 
-      input.splay = {
-          .index = 0.5,
-      };
+      input.splay.thumb = 0;
+      input.splay.index = 0.5;
 
       check(input, "A0B1023(BB)2047(BAB)2047(BAC)3071(BAD)4095C0D0E0\n");
 
@@ -131,23 +122,23 @@ TEST_CASE("AlphaEncoding::encodeInput", "[alpha]") {
     SECTION("Buttons") {
       InputPeripheralData input;
 
-      input.button_a = { .press = true };
-      input.button_calibrate = { .press = true };
+      input.button_a.press = true;
+      input.button_calibrate.press = true;
 
       check(input, "A0B0C0D0E0JO\n");
 
-      input.grab = { true };
-      input.pinch = { true };
+      input.grab.press = true;
+      input.pinch.press = true;
 
       check(input, "A0B0C0D0E0JOML\n");
 
-      input.button_a = { .press = false };
-      input.button_calibrate = { .press = false };
+      input.button_a.press = false;
+      input.button_calibrate.press = false;
 
       check(input, "A0B0C0D0E0ML\n");
 
-      input.grab = { false };
-      input.pinch = { false };
+      input.grab.press = false;
+      input.pinch.press = false;
 
       check(input, "A0B0C0D0E0\n");
     }
@@ -183,13 +174,13 @@ TEST_CASE("AlphaEncoding::encodeInput", "[alpha]") {
           .ring = 0.5,
           .pinky = 0.5,
       };
-      input.button_a = { .press = true };
-      input.button_b = { .press = true };
-      input.button_menu = { .press = true };
-      input.button_calibrate = { .press = true };
-      input.trigger = { true };
-      input.grab = { true };
-      input.pinch = { true };
+      input.button_a.press = true;
+      input.button_b.press = true;
+      input.button_menu.press = true;
+      input.button_calibrate.press = true;
+      input.trigger.press = true;;
+      input.grab.press = true;
+      input.pinch.press = true;
 
       input.joystick = {
           .x = 0.5,
